@@ -152,7 +152,7 @@ load train and test data
 '''
 # load TRAIN points and labels
 path = os.path.dirname(os.path.realpath(__file__))
-train_path = os.path.join(path, "Seg_Prep")
+train_path = os.path.join(path, "DATA/Seg_Prep")
 filenames = [d for d in os.listdir(train_path)]
 print(train_path)
 print(filenames)
@@ -172,7 +172,7 @@ train_points_r = train_points.reshape(-1, num_points, 3)
 train_labels_r = train_labels.reshape(-1, num_points, k)
 
 # load TEST points and labels
-test_path = os.path.join(path, "Seg_Prep_test")
+test_path = os.path.join(path, "DATA/Seg_Prep_test")
 filenames = [d for d in os.listdir(test_path)]
 print(test_path)
 print(filenames)
