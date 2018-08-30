@@ -6,7 +6,7 @@
 1. Run `./pointnet1_keras/train_seg.py` to run training PointNet
  ### Notice:
  - this PointNet version is able to save model after training
- ### This normal version is referenced from repository: `https://github.com/garyli1019/pointnet-keras`
+ ### This normal version is referenced from repository: ####`https://github.com/garyli1019/pointnet-keras`
  
  ## Run steps of Dynamic data loading version: 
  1. Download and unzip the [Shapenet dataset](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip) to `./pointnet1_keras/DATA` directory
