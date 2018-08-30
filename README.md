@@ -1,6 +1,7 @@
 # pointnet1_keras
+There are 2 ways to run this project
 
-## Run steps of Normal version:
+## 1. Run steps of Normal version:
 1. Download and unzip the [Shapenet dataset](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip) to `./pointnet1_keras/DATA` directory
 1. Run `./pointnet1_keras/DATA/Seg_dataprep.py` to convert data to `*.h5` type.
 1. Run `./pointnet1_keras/train_seg.py` to run training PointNet
@@ -9,7 +10,7 @@
  ### This normal version is referenced from repository: 
  `https://github.com/garyli1019/pointnet-keras`
  
- ## Run steps of Dynamic data loading version: 
+ ## 2. Run steps of Dynamic data loading version: 
  1. Download and unzip the [Shapenet dataset](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip) to `./pointnet1_keras/DATA` directory
  1. Run `./pointnet1_keras/train_seg_2.py` to run training PointNet
  ### Notice: 
