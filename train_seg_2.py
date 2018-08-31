@@ -65,7 +65,7 @@ num_points = 1024
 # number of categories
 k = 4
 # epoch number
-epo = 20
+epo = 10
 # define optimizer
 adam = optimizers.Adam(lr=0.001, decay=0.7)
 
@@ -156,14 +156,17 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 from DATA.shapenet_generator import ShapenetcoreSequence
-train_generator = ShapenetcoreSequence(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=128, train=True)
-valid_generator = ShapenetcoreSequence(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=128, train=False)
+train_generator = ShapenetcoreSequence(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=True)
+valid_generator = ShapenetcoreSequence(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=False)
 
 # train model
 for i in range(epo):
-    model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=1, shuffle=True, verbose=1)
-    # evaluate model
-    if i % 5 == 0:
-        score = model.evaluate_generator(generator=valid_generator, verbose=1)
-        print('Test loss: ', score[0])
-        print('Test accuracy: ', score[1])
+    model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=2, shuffle=True, verbose=1)
+
+# evaluate model
+score = model.evaluate_generator(generator=valid_generator, verbose=1)
+print('Test loss: ', score[0])
+print('Test accuracy: ', score[1])
+
+# save model
+model.save('./DATA/saved_model.h5')
