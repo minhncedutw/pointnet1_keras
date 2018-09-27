@@ -1,5 +1,5 @@
 '''
-    File name: BatchGenerator for [shapenetcore_partanno_v0](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip)
+    File name: BatchGenerator
     Author: minhnc
     Date created(MM/DD/YYYY): 8/29/2018
     Last modified(MM/DD/YYYY HH:MM): 8/29/2018 10:27 PM
