@@ -29,9 +29,11 @@ import argparse
 import os.path
 import sys
 import time
+import math
 
 import numpy as np
 
+import keras
 from keras.utils import Sequence
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -50,70 +52,75 @@ from skimage.transform import resize
 
 class ShapenetGenerator(Sequence):
 
-    def __init__(self, directory, num_points, class_choice, batch_size=32, train=True):
+    def __init__(self, directory, num_points, cat_choices=None, num_classes=None, batch_size=32, shuffle=False, train=True):
         self.dir = directory
         self.num_points = num_points
-        self.class_choice = class_choice
+        self.num_classes = num_classes
+        self.cat_choices = cat_choices
         self.batch_size = batch_size
 
-        self.cat_file = os.path.join(self.dir, 'synsetoffset2category.txt') # category file
+        self.cat_list_file = os.path.join(self.dir, 'synsetoffset2category.txt') # category file
         self.cat_dict = {} # category dictionary
 
-        with open(self.cat_file, 'r') as f:
+        # create dict of category-path
+        with open(self.cat_list_file, 'r') as f: # get list of category/path in the cat_list_file
             for line in f:
-                [cat, folder] = line.strip().split()
-                self.cat_dict[cat] = folder # 'category' information is saved in 'folder'
+                [category, path] = line.strip().split()
+                self.cat_dict[category] = path # 'category' information is saved in 'folder'
+        if not cat_choices is None: # exclude category/path that are not chosen
+            self.cat_dict = {category: path for category, path in self.cat_dict.items() if category in cat_choices}
 
-        self.cur_folder = os.path.join(self.dir, self.cat_dict[class_choice]) # current folder
-        self.points_path = os.path.join(self.cur_folder, "points")
-        self.labels_path = os.path.join(self.cur_folder, "points_label")
+        self.datapath = []
+        for item in self.cat_dict:
+            points_path = os.path.join(self.dir, self.cat_dict[item], "points") # path to points folder
+            labels_path = os.path.join(self.dir, self.cat_dict[item], "points_label") # path to labels folder
 
-        self.points_filenames = [file for file in sorted(os.listdir(self.points_path))]
-        if train:
-            self.points_filenames = self.points_filenames[:int(len(self.points_filenames) * 0.9)]
-        else:
-            self.points_filenames = self.points_filenames[int(len(self.points_filenames) * 0.9):]
+            self.points_filenames = [file for file in sorted(os.listdir(points_path))]
+            if shuffle:
+                np.random.shuffle(self.points_filenames)
+            if train:
+                self.points_filenames = self.points_filenames[:int(len(self.points_filenames) * 0.9)]
+            else:
+                self.points_filenames = self.points_filenames[int(len(self.points_filenames) * 0.9):]
 
-        self.names = []
-        for file in self.points_filenames:
-            self.names.append(file.split('.')[0])
+            for fn in self.points_filenames:
+                token = (os.path.splitext(os.path.basename(fn))[0])
+                pts_file = os.path.join(points_path, token + '.pts')
+                seg_file = os.path.join(labels_path, token + '.seg')
+                self.datapath.append((item, pts_file, seg_file))
 
-        self.labels = [label for label in os.listdir(self.labels_path)]
+        count_classes = 0
+        for i in range(math.ceil(len(self.datapath) / 50)):
+            biggest_label = np.max(np.unique(np.loadtxt(self.datapath[i][-1]).astype(np.uint8)))
+            if biggest_label > count_classes:
+                count_classes = biggest_label
+        if (self.num_classes is None) or (self.num_classes < count_classes + 1):
+            self.num_classes = count_classes + 1
 
     def __len__(self):
-        return int(np.ceil(len(self.names) / float(self.batch_size)))
+        return int(np.ceil(len(self.datapath) / float(self.batch_size)))
 
     def __getitem__(self, idx):
         left_bound = idx * self.batch_size
         right_bound = (idx + 1) * self.batch_size
 
-        if right_bound > len(self.names):
-            right_bound = len(self.names)
+        if right_bound > len(self.datapath):
+            right_bound = len(self.datapath)
 
         batch_x = []
         batch_y = []
         for i in range(right_bound - left_bound):
-            cur_points_path = os.path.join(self.points_path, self.points_filenames[left_bound + i])
-            cur_points = np.loadtxt(cur_points_path).astype('float32')
+            points = np.loadtxt(self.datapath[left_bound + i][1]).astype('float32')
+            labels = np.loadtxt(self.datapath[left_bound + i][2]).astype('int')
 
-            sub_batch = []
-            for label_idx in range(len(self.labels)):
-                label_filename = self.names[left_bound + i] + '.seg'
-                label_path = os.path.join(self.labels_path, self.labels[label_idx], label_filename)
+            choice = np.random.choice(len(points), self.num_points, replace=True)
+            points = points[choice, :]
+            labels = labels[choice]
 
-                if os.path.isfile(label_path):
-                    cur_label = np.loadtxt(label_path).astype('float32')
-                else:
-                    cur_label = np.zeros((len(cur_points)))
-                sub_batch.append(cur_label)
-            sub_batch = np.array(sub_batch).transpose(1, 0)
+            onehot_labels = keras.utils.to_categorical(y=labels, num_classes=self.num_classes)
 
-            choice = np.random.choice(len(cur_points), self.num_points, replace=True)
-            cur_points = cur_points[choice, :]
-            sub_batch = sub_batch[choice, :]
-
-            batch_x.append(cur_points)
-            batch_y.append(sub_batch)
+            batch_x.append(points)
+            batch_y.append(onehot_labels)
 
         return np.array(batch_x), np.array(batch_y)
 
