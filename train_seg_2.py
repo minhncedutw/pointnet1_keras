@@ -164,7 +164,7 @@ valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0',
 
 # train model
 for i in range(epo):
-    model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=2, shuffle=True, verbose=2)
+    model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=2, steps_per_epoch=train_generator.__len__()/8, validation_steps=valid_generator.__len__()/8, shuffle=True, verbose=2)
 
 # evaluate model
 score = model.evaluate_generator(generator=valid_generator, verbose=1)
