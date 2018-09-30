@@ -159,8 +159,8 @@ from DATA.shapenet_generator1 import ShapenetGenerator
 train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=True)
 valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=False)
 # from DATA.shapenet_generator2 import ShapenetGenerator
-# train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', num_classes=5, batch_size=64, train=True)
-# valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', num_classes=5, batch_size=64, train=False)
+# train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=64, train=True)
+# valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=64, train=False)
 
 # train model
 for i in range(epo):
