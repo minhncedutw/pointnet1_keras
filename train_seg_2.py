@@ -60,10 +60,10 @@ def jitter_point_cloud(batch_data, sigma=0.01, clip=0.05):
 global variable
 '''
 # number of points in each sample
-num_points = 1024
+num_points = 2048
 # num_points = 1048576
 # number of categories
-k = 4
+k = 5
 # epoch number
 epo = 10
 # define optimizer
@@ -155,16 +155,15 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-from DATA.shapenet_generator1 import ShapenetGenerator
-train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=True)
-valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=64, train=False)
-# from DATA.shapenet_generator2 import ShapenetGenerator
-# train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=64, train=True)
-# valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=64, train=False)
+# from DATA.shapenet_generator1 import ShapenetGenerator
+# train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=8, train=True)
+# valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=8, train=False)
+from DATA.shapenet_generator2 import ShapenetGenerator
+train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=8, train=True)
+valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', num_points=num_points, cat_choices='Airplane', batch_size=8, train=False)
 
 # train model
-for i in range(epo):
-    model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=2, steps_per_epoch=train_generator.__len__()/8, validation_steps=valid_generator.__len__()/8, shuffle=True, verbose=2)
+model.fit_generator(generator=train_generator, validation_data=valid_generator, epochs=2, verbose=1)
 
 # evaluate model
 score = model.evaluate_generator(generator=valid_generator, verbose=1)
