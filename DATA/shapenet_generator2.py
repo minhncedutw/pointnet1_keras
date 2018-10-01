@@ -52,6 +52,7 @@ class ShapenetGenerator(Sequence):
         self.num_classes = num_classes
         self.cat_choices = cat_choices
         self.batch_size = batch_size
+        self.train = train
 
         self.cat_list_file = os.path.join(self.dir, 'synsetoffset2category.txt') # category file
         self.cat_dict = {} # category dictionary
@@ -72,7 +73,7 @@ class ShapenetGenerator(Sequence):
             self.points_filenames = [file for file in sorted(os.listdir(points_path))]
             if shuffle:
                 np.random.shuffle(self.points_filenames)
-            if train:
+            if self.train:
                 self.points_filenames = self.points_filenames[:int(len(self.points_filenames) * 0.9)]
             else:
                 self.points_filenames = self.points_filenames[int(len(self.points_filenames) * 0.9):]
