@@ -28,6 +28,9 @@ import os.path
 import sys
 import time
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0" # The GPU id to use, usually either "0" or "1"
+
 import numpy as np
 
 import keras
