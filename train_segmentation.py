@@ -43,6 +43,8 @@ from keras.layers import Lambda, concatenate
 from keras.callbacks import ModelCheckpoint, TensorBoard, RemoteMonitor, ReduceLROnPlateau
 import tensorflow as tf
 
+from pointnet import PointNet
+
 #==============================================================================
 # Constant Definitions
 #==============================================================================
@@ -59,8 +61,6 @@ print(opt)
 #==============================================================================
 # Function Definitions
 #==============================================================================
-from pointnet import PointNet
-
 def callback_list(checkpoint_path, tensorboard_path):
     callback_list = [
         ModelCheckpoint(
