@@ -146,39 +146,25 @@ def PointNet(num_points, num_classes):
 
     return model
 
-def callbacks(batch_size=None):
-    callbacks_list = [
+def callback_list(checkpoint_path, tensorboard_path):
+    callback_list = [
         ModelCheckpoint(
-                        filepath='./outputs/model_checkpoints/model.loss.{epoch:02d}.hdf5', # string, path to save the model file.
+                        filepath=checkpoint_path + '/model.loss.{epoch:02d}.hdf5', # string, path to save the model file.
                         monitor='val_loss', # quantity to monitor.
                         save_best_only=True, # if save_best_only=True, the latest best model according to the quantity monitored will not be overwritten.
                         mode='auto', # one of {auto, min, max}. If save_best_only=True, the decision to overwrite the current save file is made based on either the maximization or the minimization of the monitored quantity. For val_acc, this should be max, for val_loss this should be min, etc. In auto mode, the direction is automatically inferred from the name of the monitored quantity.
                         save_weights_only='false', # if True, then only the model's weights will be saved (model.save_weights(filepath)), else the full model is saved (model.save(filepath)).
                         period=1, # Interval (number of epochs) between checkpoints.
                         verbose=1), # verbosity mode, 0 or 1.
-        TensorBoard(log_dir='./outputs/graph',
-                    histogram_freq=0,
-                    write_graph=True,
-                    write_images=True,
-                    embeddings_freq=0,
-                    embeddings_layer_names=None,
-                    embeddings_metadata=None,
-                    embeddings_data=None),
-        # RemoteMonitor(root='http://localhost:9000',
-        #               path='./outputs/monitor/',
-        #               field='data', headers=None,
-        #               send_as_json=False),
-        # ReduceLROnPlateau(monitor='val_loss', # quantity to be monitored.
-        #                   factor=0.2, # factor by which the learning rate will be reduced. new_lr = lr * factor
-        #                   patience=4, # number of epochs with no improvement after which learning rate will be reduced.
-        #                   verbose=1, # int. 0: quiet, 1: update messages.
-        #                   mode='min', # In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
-        #                               # in max mode it will be reduced when the quantity monitored has stopped increasing;
-        #                               # in auto mode, the direction is automatically inferred from the name of the monitored quantity.
-        #                   min_lr=1e-6, # lower bound on the learning rate.
-        #                   cooldown=2), # number of epochs to wait before resuming normal operation after lr has been reduced.
+        TensorBoard(log_dir=tensorboard_path, # the path of the directory where to save the log files to be parsed by TensorBoard.
+                    histogram_freq=0, # frequency (in epochs) at which to compute activation and weight histograms for the layers of the model. If set to 0, histograms won't be computed. Validation data (or split) must be specified for histogram visualizations.
+                    # batch_size=batch_size,
+                    write_graph=True, # whether to visualize the graph in TensorBoard. The log file can become quite large when write_graph is set to True.
+                    write_grads=False, # whether to visualize gradient histograms in TensorBoard. histogram_freq must be greater than 0.
+                    write_images=True, # whether to write model weights to visualize as image in TensorBoard.
+                    embeddings_freq=0), # frequency (in epochs) at which selected embedding layers will be saved. If set to 0, embeddings won't be computed. Data to be visualized in TensorBoard's Embedding tab must be passed as embeddings_data.
     ]
-    return callbacks_list
+    return callback_list
 
 #==============================================================================
 # Main function
@@ -213,13 +199,25 @@ def main(argv=None):
     model.compile(optimizer='adam',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    callback_list = callbacks(batch_size=batch_size)
+
+    '''
+    Define callbacks
+    '''
+    checkpoint_path = './outputs/checkpoints'
+    if not os.path.exists(checkpoint_path):
+        os.mkdir(checkpoint_path)
+    tensorboard_path = './outputs/graph'
+    if not os.path.exists(tensorboard_path):
+        os.mkdir(tensorboard_path)
+    callbacks = callback_list(checkpoint_path=checkpoint_path, tensorboard_path=tensorboard_path)
 
     '''
     Train then Evaluate model
     '''
     # train model
-    trn_his = model.fit_generator(generator=trn_generator, validation_data=val_generator, epochs=num_epoches, verbose=1)
+    trn_his = model.fit_generator(generator=trn_generator, validation_data=val_generator, epochs=num_epoches,
+                                  callbacks=callbacks,
+                                  verbose=1)
 
     # evaluate model
     score = model.evaluate_generator(generator=val_generator, verbose=1)

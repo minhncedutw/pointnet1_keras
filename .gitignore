@@ -108,3 +108,6 @@ venv.bak/
 
 # DATA
 !DATA
+
+# outputs
+outputs/
