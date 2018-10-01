@@ -37,6 +37,7 @@ from keras.models import Model
 from keras.layers import Dense, Reshape
 from keras.layers import Convolution1D, MaxPooling1D, BatchNormalization
 from keras.layers import Lambda, concatenate
+from keras.callbacks import ModelCheckpoint, TensorBoard, RemoteMonitor, ReduceLROnPlateau
 import tensorflow as tf
 
 #==============================================================================
@@ -145,6 +146,40 @@ def PointNet(num_points, num_classes):
 
     return model
 
+def callbacks(batch_size=None):
+    callbacks_list = [
+        ModelCheckpoint(
+                        filepath='./outputs/model_checkpoints/model.loss.{epoch:02d}.hdf5', # string, path to save the model file.
+                        monitor='val_loss', # quantity to monitor.
+                        save_best_only=True, # if save_best_only=True, the latest best model according to the quantity monitored will not be overwritten.
+                        mode='auto', # one of {auto, min, max}. If save_best_only=True, the decision to overwrite the current save file is made based on either the maximization or the minimization of the monitored quantity. For val_acc, this should be max, for val_loss this should be min, etc. In auto mode, the direction is automatically inferred from the name of the monitored quantity.
+                        save_weights_only='false', # if True, then only the model's weights will be saved (model.save_weights(filepath)), else the full model is saved (model.save(filepath)).
+                        period=1, # Interval (number of epochs) between checkpoints.
+                        verbose=1), # verbosity mode, 0 or 1.
+        TensorBoard(log_dir='./outputs/graph',
+                    histogram_freq=0,
+                    write_graph=True,
+                    write_images=True,
+                    embeddings_freq=0,
+                    embeddings_layer_names=None,
+                    embeddings_metadata=None,
+                    embeddings_data=None),
+        # RemoteMonitor(root='http://localhost:9000',
+        #               path='./outputs/monitor/',
+        #               field='data', headers=None,
+        #               send_as_json=False),
+        # ReduceLROnPlateau(monitor='val_loss', # quantity to be monitored.
+        #                   factor=0.2, # factor by which the learning rate will be reduced. new_lr = lr * factor
+        #                   patience=4, # number of epochs with no improvement after which learning rate will be reduced.
+        #                   verbose=1, # int. 0: quiet, 1: update messages.
+        #                   mode='min', # In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+        #                               # in max mode it will be reduced when the quantity monitored has stopped increasing;
+        #                               # in auto mode, the direction is automatically inferred from the name of the monitored quantity.
+        #                   min_lr=1e-6, # lower bound on the learning rate.
+        #                   cooldown=2), # number of epochs to wait before resuming normal operation after lr has been reduced.
+    ]
+    return callbacks_list
+
 #==============================================================================
 # Main function
 #==============================================================================
@@ -178,6 +213,7 @@ def main(argv=None):
     model.compile(optimizer='adam',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
+    callback_list = callbacks(batch_size=batch_size)
 
     '''
     Train then Evaluate model
