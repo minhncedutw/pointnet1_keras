@@ -44,9 +44,6 @@ from keras.preprocessing.image import ImageDataGenerator
 #==============================================================================
 # Function Definitions
 #==============================================================================
-from skimage.io import imread
-from skimage.transform import resize
-
 class ShapenetGenerator(Sequence):
 
     def __init__(self, directory, num_points, cat_choices=None, num_classes=None, batch_size=32, shuffle=False, train=True):

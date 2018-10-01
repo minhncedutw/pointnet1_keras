@@ -21,6 +21,7 @@ dependencies:
     - gym
     - h5py
     - idna
+    - Keras
     - keras-applications
     - keras-preprocessing
     - markdown
@@ -32,6 +33,7 @@ dependencies:
     - pygments
     - PyQt5
     - requests
+    - scikit-image
     - six
     - Sphinx
     - tensorboard
