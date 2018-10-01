@@ -1,0 +1,45 @@
+name: pointnet_keras
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - certifi
+  - pip=18.0
+  - python=3.6
+  - setuptools
+  - wheel
+  - pip:
+    - absl-py
+    - apptools
+    - astor
+    - chardet
+    - cython
+    - envisage
+    - future
+    - gast
+    - grpcio
+    - gym
+    - h5py
+    - idna
+    - keras-applications
+    - keras-preprocessing
+    - markdown
+    - mayavi
+    - numpy
+    - protobuf
+    - pyface>=6.0.0
+    - pyglet
+    - pygments
+    - PyQt5
+    - requests
+    - six
+    - Sphinx
+    - tensorboard
+    - tensorflow-gpu
+    - termcolor
+    - traits>=4.6.0
+    - traitsui>=6.0.0
+    - urllib3
+    - vtk
+    - werkzeug
+
