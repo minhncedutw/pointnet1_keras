@@ -46,8 +46,8 @@ import tensorflow as tf
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, default='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', help='data directory')
 parser.add_argument('--chose_cat', action='append', default='Airplane', help='Add category choice')
-parser.add_argument('--num_points', type=int, default=2048, help='number of input points')
-parser.add_argument('--batch_size', type=int, default=8, help='input batch size')
+parser.add_argument('--num_points', type=int, default=4096, help='number of input points') # 8192 16384 32768
+parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
 parser.add_argument('--num_epoches', type=int, default=50, help='number of epochs to train for')
 parser.add_argument('--trained_model', type=str, default='',  help='model path')
 opt = parser.parse_args()
@@ -205,10 +205,10 @@ def main(argv=None):
     '''
     checkpoint_path = './outputs/checkpoints'
     if not os.path.exists(checkpoint_path):
-        os.mkdir(checkpoint_path)
+        os.makedirs(checkpoint_path)
     tensorboard_path = './outputs/graph'
     if not os.path.exists(tensorboard_path):
-        os.mkdir(tensorboard_path)
+        os.makedirs(tensorboard_path)
     callbacks = callback_list(checkpoint_path=checkpoint_path, tensorboard_path=tensorboard_path)
 
     '''
