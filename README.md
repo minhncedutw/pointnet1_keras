@@ -2,8 +2,11 @@
 > Implementation of PointNet-1 on Point Cloud segmentation problem by Keras(based Tensorflow).
 
 This repo is implementation for PointNet(https://arxiv.org/abs/1612.00593) in Keras. The model is in pointnet.py.
+
 Original tensorflow implementation: https://github.com/charlesq34/pointnet
+
 Pytorch implementation: https://github.com/fxia22/pointnet.pytorch
+
 This code was built and developed based on this repo: https://github.com/garyli1019/pointnet-keras
 
 ![](outputs/segmented_airplane.png)
