@@ -42,6 +42,15 @@ import tensorflow as tf
 #==============================================================================
 # Constant Definitions
 #==============================================================================
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type=str, default='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', help='data directory')
+parser.add_argument('--chose_cat', action='append', default='Airplane', help='Add category choice')
+parser.add_argument('--num_points', type=int, default=2048, help='number of input points')
+parser.add_argument('--batch_size', type=int, default=8, help='input batch size')
+parser.add_argument('--num_epoches', type=int, default=50, help='number of epochs to train for')
+parser.add_argument('--trained_model', type=str, default='',  help='model path')
+opt = parser.parse_args()
+print(opt)
 
 #==============================================================================
 # Function Definitions
@@ -145,8 +154,10 @@ def main(argv=None):
     '''
     Define network/training parameters
     '''
-    num_points = 2048
-    num_epoches = 50
+    num_points = opt.num_points
+    num_epoches = opt.num_epoches
+    batch_size = opt.batch_size
+    cat_choices = opt.chose_cat
 
     '''
     Define dataset/data-loader
@@ -156,10 +167,8 @@ def main(argv=None):
     # valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=8, train=False)
     # num_classes = 4
     from DATA.shapenet_generator2 import ShapenetGenerator
-    trn_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0',
-                                        num_points=num_points, cat_choices='Airplane', batch_size=8, train=True)
-    val_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_segmentation_benchmark_v0',
-                                        num_points=num_points, cat_choices='Airplane', batch_size=8, train=False)
+    trn_generator = ShapenetGenerator(directory=opt.data_dir, num_points=num_points, cat_choices=cat_choices, batch_size=batch_size, train=True)
+    val_generator = ShapenetGenerator(directory=opt.data_dir, num_points=num_points, cat_choices=cat_choices, batch_size=batch_size, train=False)
     num_classes = 5
 
     '''

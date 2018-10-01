@@ -35,9 +35,6 @@ import numpy as np
 from keras.utils import Sequence
 from keras.preprocessing.image import ImageDataGenerator
 
-# datagen = ImageDataGenerator
-# generator = datagen.flow_from_directory()
-
 #==============================================================================
 # Constant Definitions
 #==============================================================================

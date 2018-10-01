@@ -1,5 +1,5 @@
 '''
-    File name: BatchGenerator
+    File name: BatchGenerator for [shapenetcore_partanno_segmentation_benchmark_v0](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_segmentation_benchmark_v0.zip)
     Author: minhnc
     Date created(MM/DD/YYYY): 8/29/2018
     Last modified(MM/DD/YYYY HH:MM): 8/29/2018 10:27 PM
@@ -36,9 +36,6 @@ import numpy as np
 import keras
 from keras.utils import Sequence
 from keras.preprocessing.image import ImageDataGenerator
-
-# datagen = ImageDataGenerator
-# generator = datagen.flow_from_directory()
 
 #==============================================================================
 # Constant Definitions
