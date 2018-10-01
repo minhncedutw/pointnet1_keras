@@ -1,17 +1,45 @@
-# pointnet1_keras
-There are 2 ways to run this project
+# PointNet1_Keras
+> Implementation of PointNet-1 on Point Cloud segmentation problem by Keras(based Tensorflow).
 
-## 1. Run steps of Normal version:
+This repo is implementation for PointNet(https://arxiv.org/abs/1612.00593) in Keras. The model is in pointnet.py.
+Original tensorflow implementation: https://github.com/charlesq34/pointnet
+Pytorch implementation: https://github.com/fxia22/pointnet.pytorch
+This code was built and developed based on this repo: https://github.com/garyli1019/pointnet-keras
+
+![](outputs/segmented_airplane.png)
+
+## Installation
+
+### Anaconda/Miniconda
+
+Windows & OS X & Linux:
+
+```sh
+conda env create -f environment.yml
+```
+
+## Usage 
+
+Below is guide to download data, train network then test prediction on Shapenet dataset
+
 1. Download and unzip the [Shapenet dataset](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip) to `./pointnet1_keras/DATA` directory
-1. Run `./pointnet1_keras/DATA/Seg_dataprep.py` to convert data to `*.h5` type.
-1. Run `./pointnet1_keras/train_seg.py` to run training PointNet
- ### Notice:
- - this PointNet version is able to save model after training
- ### This normal version is referenced from repository: 
- `https://github.com/garyli1019/pointnet-keras`
- 
- ## 2. Run steps of Dynamic data loading version: 
- 1. Download and unzip the [Shapenet dataset](https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_v0.zip) to `./pointnet1_keras/DATA` directory
- 1. Run `./pointnet1_keras/train_seg_2.py` to run training PointNet
- ### Notice: 
- - this version, data is loaded when training so the train speed is very slow compared to Normal version. But this version can flexiblely change size of data and size of network.
+1. Run training, type on terminal: `python train_segmentation.py`
+1. Run testing, type on terminal: `python test_segmentation.py`
+
+## Meta
+
+NGUYEN CONG MINH – [@Facebook](https://www.facebook.com/minhnc.social) – minhnc.edu.tw@gmail.com
+
+Distributed under the MIT license. See ``LICENSE`` for more information.
+
+[https://github.com/minhncedutw/pointnet1_keras](https://github.com/minhncedutw/pointnet1_keras)
+
+## Contributing
+
+1. Fork it (<https://github.com/yourname/yourproject/fork>)
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
+
+#### [README Template](https://github.com/dbader/readme-template) from [Dan Bader](https://dbader.org/blog/write-a-great-readme-for-your-github-project)
