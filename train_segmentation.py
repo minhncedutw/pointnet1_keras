@@ -221,6 +221,7 @@ def main(argv=None):
 
     # evaluate model
     score = model.evaluate_generator(generator=val_generator, verbose=1)
+    print("Score: ", score)
 
 
 if __name__ == '__main__':
