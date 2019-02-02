@@ -29,11 +29,16 @@ import sys
 import time
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0" # The GPU id to use, usually either "0" or "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4" # The GPU id to use, usually either "0" or "1"
 
 import numpy as np
 
+# import tensorflow as tf
+# config = tf.ConfigProto( device_count = {'GPU': 4 , 'CPU': 32} )
+# sess = tf.Session(config=config)
+
 import keras
+# keras.backend.set_session(sess)
 from keras import optimizers
 from keras.layers import Input
 from keras.models import Model
@@ -41,20 +46,26 @@ from keras.layers import Dense, Reshape
 from keras.layers import Convolution1D, MaxPooling1D, BatchNormalization
 from keras.layers import Lambda, concatenate
 from keras.callbacks import ModelCheckpoint, TensorBoard, RemoteMonitor, ReduceLROnPlateau
-import tensorflow as tf
+from keras.utils import multi_gpu_model
+# from keras import backend as K
+# print('Number gpus: ')
+# print(K.tensorflow_backend._get_available_gpus())
 
-from pointnet import PointNet, PointNetFull
+from AdamW import AdamW
+
+from pointnet import PointNetFull
+from pointnet import weighted_categorical_crossentropy
 
 #==============================================================================
 # Constant Definitions
 #==============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', type=str, default='./DATA/shapenetcore_partanno_segmentation_benchmark_v0', help='data directory')
+parser.add_argument('--data_dir', type=str, default='./DATA/modelnet40_ply_hdf5_2048', help='data directory')
 parser.add_argument('--chose_cat', action='append', default='Airplane', help='Add category choice')
-parser.add_argument('--num_points', type=int, default=1024, help='number of input points') # 8192 16384 32768
-parser.add_argument('--batch_size', type=int, default=4, help='input batch size')
-parser.add_argument('--num_epoches', type=int, default=50, help='number of epochs to train for')
-parser.add_argument('--trained_model', type=str, default='',  help='model path')
+parser.add_argument('--num_points', type=int, default=2048, help='number of input points') # 8192 16384 32768 65536
+parser.add_argument('--batch_size', type=int, default=64, help='input batch size')
+parser.add_argument('--num_epoches', type=int, default=260, help='number of epochs to train for')
+parser.add_argument('--pretrained_model', type=str, default='',  help='model path')
 opt = parser.parse_args()
 print(opt)
 
@@ -64,13 +75,21 @@ print(opt)
 def callback_list(checkpoint_path, tensorboard_path):
     callback_list = [
         ModelCheckpoint(
-                        filepath=checkpoint_path + '/model.loss.{epoch:02d}.hdf5', # string, path to save the model file.
-                        monitor='val_loss', # quantity to monitor.
+                        filepath=checkpoint_path + '/model.acc.{epoch:02d}.hdf5', # string, path to save the model file.
+                        monitor='val_acc', # quantity to monitor.
                         save_best_only=True, # if save_best_only=True, the latest best model according to the quantity monitored will not be overwritten.
                         mode='auto', # one of {auto, min, max}. If save_best_only=True, the decision to overwrite the current save file is made based on either the maximization or the minimization of the monitored quantity. For val_acc, this should be max, for val_loss this should be min, etc. In auto mode, the direction is automatically inferred from the name of the monitored quantity.
                         save_weights_only='false', # if True, then only the model's weights will be saved (model.save_weights(filepath)), else the full model is saved (model.save(filepath)).
                         period=1, # Interval (number of epochs) between checkpoints.
                         verbose=1), # verbosity mode, 0 or 1.
+        ModelCheckpoint(
+                        filepath=checkpoint_path + '/model.loss.{epoch:02d}.hdf5',  # string, path to save the model file.
+                        monitor='val_loss',  # quantity to monitor.
+                        save_best_only=True, # if save_best_only=True, the latest best model according to the quantity monitored will not be overwritten.
+                        mode='auto', # one of {auto, min, max}. If save_best_only=True, the decision to overwrite the current save file is made based on either the maximization or the minimization of the monitored quantity. For val_acc, this should be max, for val_loss this should be min, etc. In auto mode, the direction is automatically inferred from the name of the monitored quantity.
+                        save_weights_only='false', # if True, then only the model's weights will be saved (model.save_weights(filepath)), else the full model is saved (model.save(filepath)).
+                        period=1,  # Interval (number of epochs) between checkpoints.
+                        verbose=1),  # verbosity mode, 0 or 1.
         TensorBoard(log_dir=tensorboard_path, # the path of the directory where to save the log files to be parsed by TensorBoard.
                     histogram_freq=0, # frequency (in epochs) at which to compute activation and weight histograms for the layers of the model. If set to 0, histograms won't be computed. Validation data (or split) must be specified for histogram visualizations.
                     # batch_size=batch_size,
@@ -94,24 +113,32 @@ def main(argv=None):
     num_epoches = opt.num_epoches
     batch_size = opt.batch_size
     cat_choices = opt.chose_cat
+    pretrained_model = opt.pretrained_model
 
     '''
     Define dataset/data-loader
     '''
-    # from DATA.shapenet_generator1 import ShapenetGenerator
-    # train_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=8, train=True)
-    # valid_generator = ShapenetGenerator(directory='./DATA/shapenetcore_partanno_v0', num_points=1024, class_choice='Chair', batch_size=8, train=False)
-    # num_classes = 4
-    from DATA.shapenet_generator2 import ShapenetGenerator
-    trn_generator = ShapenetGenerator(directory=opt.data_dir, num_points=num_points, cat_choices=cat_choices, batch_size=batch_size, train=True)
-    val_generator = ShapenetGenerator(directory=opt.data_dir, num_points=num_points, cat_choices=cat_choices, batch_size=batch_size, train=False)
-    num_classes = 5
+    path = opt.data_dir
+    train_path = os.path.join(path, "train")
+    test_path = os.path.join(path, "test")
+    from DATA.model40_generator import Model40Generator
+    trn_generator = Model40Generator(directory=train_path, num_points=num_points, batch_size=batch_size, train=True, shuffle_point=True)
+    val_generator = Model40Generator(directory=test_path, num_points=num_points, batch_size=batch_size, train=True, shuffle_point=False)
+    num_classes = trn_generator.num_classes
 
     '''
     Define model
     '''
-    model = PointNetFull(num_points=num_points, num_classes=num_classes)
-    model.compile(optimizer='adam',
+    model = PointNetFull(num_points=num_points, num_classes=num_classes, type='cls')
+
+    if pretrained_model is not '':
+        print('Loaded pretrained-model: ', pretrained_model)
+        model.load_weights(filepath=pretrained_model)
+    else:
+        print('Train from scratch')
+
+    optimizer = optimizers.Adam(lr=0.001)
+    model.compile(optimizer=optimizer,
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
@@ -131,7 +158,7 @@ def main(argv=None):
     '''
     # train model
     trn_his = model.fit_generator(generator=trn_generator, validation_data=val_generator, epochs=num_epoches,
-                                  callbacks=callbacks,
+                                  callbacks=callbacks, workers=64,
                                   verbose=1)
 
     # evaluate model
